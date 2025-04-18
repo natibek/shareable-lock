@@ -24,6 +24,16 @@ class SharableLock:
     def __init__(
         self, fname: str = "lock.lock", create: bool = False, id: str | None = None
     ) -> None:
+        """Instantiates the lock with the associated file.
+
+        Args:
+            - fname: The name of the file to use as locks. `lock.lock` by default.
+            - create: Whether to create the file when instantiating the lock. `False` by default.
+            - id: Optional string id for the lock.
+
+        Raises:
+            - FileNotFoundError: If not creating creating the file and file is not found.
+        """
         self.create = create
         self.lock_path = fname
 
@@ -34,7 +44,6 @@ class SharableLock:
         else:
             raise FileNotFoundError(f"{self.lock_path} not found")
 
-        self.file = None
         self.locked = False
         self.id = id
 
