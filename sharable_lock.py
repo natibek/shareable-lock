@@ -3,6 +3,7 @@ import os.path
 from contextlib import contextmanager
 import signal
 
+
 # https://stackoverflow.com/questions/5255220/fcntl-flock-how-to-implement-a-timeout
 @contextmanager
 def timeout(seconds):
@@ -18,10 +19,14 @@ def timeout(seconds):
         signal.alarm(0)
         signal.signal(signal.SIGALRM, original_handler)
 
+
 class SharableLock:
-    def __init__(self, fname: str = "lock.lock", create: bool = False, id: str|None = None) -> None:
+    def __init__(
+        self, fname: str = "lock.lock", create: bool = False, id: str | None = None
+    ) -> None:
         self.create = create
         self.lock_path = fname
+
         if create:
             self.fd = open(self.lock_path, "x")
         elif os.path.isfile(self.lock_path):
@@ -33,42 +38,58 @@ class SharableLock:
         self.locked = False
         self.id = id
 
-
     def acquire(self, t: int | None = None) -> bool:
+        """Acquires the lock with an optional timeout (in seconds). An exclusive
+        lock on the file is used. If timeout is exceeded, the `acquire` returns `False`.
+        Otherwise, it returns true.
+
+        Args:
+            - t: Optional time out in seconds.
+
+        Returns: `True` if lock is acquired successfully and `False` otherwise.
+
+        Raises:
+            - IOError: If `flock.flock` fails with an IOError.
+        """
         if t is not None:
-            #print(f"{self.id} waiting for the lock.")
             with timeout(t):
                 try:
                     fcntl.flock(self.fd, fcntl.LOCK_EX)
                     self.locked = True
                     return True
                 except TimeoutError:
-                    print("Lock timed out")
                     return False
                 except IOError:
-                    print("Failed")
-                    raise IOError
-
+                    raise
         else:
             try:
                 fcntl.flock(self.fd, fcntl.LOCK_EX)
                 self.locked = True
-                print(f"{self.id} acquired lock")
                 return True
             except IOError:
-                print("Failed")
-                raise IOError
+                raise
 
     def release(self):
+        """Releases the lock. If it has not been acquired yet, as assertion error
+        will be raised.
+
+        Raises:
+            - IOError: If `flock.flock` fails with an IOError.
+        """
         assert self.locked, "Releasing a lock that has not been acquired."
         try:
             fcntl.flock(self.fd, fcntl.LOCK_UN)
             self.locked = False
         except IOError:
-            print("Failed")
-            raise IOError
+            raise
 
     def delete_lock(self, unlink: bool = False):
+        """Close the file being used for locking the resource. If unlink is `True`,
+        it also deletes the file.
+
+        Args:
+            - unlink: Whether to delete the lock file.
+        """
         self.fd.close()
         if unlink:
             os.remove(self.lock_path)
