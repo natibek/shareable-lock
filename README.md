@@ -1,5 +1,5 @@
 # Shareable Lock
-`shareable_lock` is a lock implementation that uses file locking underneath that can be shared across Python processes. Available locks from `multiprocessing` and `threading` don't allow for sharing instances for the same locks across Python processes. With `shareable_lock`'s `ShareableLock`, a lock for the same resource can be instantiated across different Python processes by creating an instance of the `ShareableLock` with the same locking file.
+`ShareableLock` is a lock implementation that uses file locking underneath that can be shared across Python processes. Available locks from `multiprocessing` and `threading` don't allow for sharing instances for the same locks across Python processes. With `shareable_lock`'s `ShareableLock`, a lock for the same resource can be instantiated across different Python processes by creating an instance of the `ShareableLock` with the same locking file.
 
 ## Installing
 
