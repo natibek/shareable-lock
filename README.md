@@ -5,7 +5,7 @@
 
 Use `uv` to install the `shareable_lock` to your project.
 ```bash
-uv pip install shareable_lock
+$ uv pip install shareable_lock
 ```
 
 ## Creating the Lock instance
